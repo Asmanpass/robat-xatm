@@ -38,7 +38,7 @@ def to_persian_num(num_str):
 
 def get_sheet_data():
     try:
-        response = requests.get(GOOGLE_WEB_APP_URL, timeout=10)
+        response = requests.get(GOOGLE_WEB_APP_URL, timeout=5)
         if response.status_code == 200:
             return response.json()
     except Exception as e:
@@ -47,23 +47,30 @@ def get_sheet_data():
 
 def get_dynamic_location_message():
     data = get_sheet_data()
-    if not data:
-        return "<b>📍 ناونیشانی مزگەوتی ئەم هەفتەیە:</b>\n\n<b>🕌 مزگەوتی دیاریکراو</b>"
+    
+    # مقادیر پیش‌فرض امن در صورت عدم اتصال به شیت
+    mosque_name = "مزگەوتی دیاریکراو"
+    final_juz = 1
+    start_date_str = None
 
-    start_date_str = data.get("startDate")
-    manual_juz = data.get("manualJuz")
-    # استخراج نام مسجد مستقیماً از شیت (ستون C)
-    mosque_name = data.get("mosque", "مزگەوتی دیاریکراو")
+    if data:
+        mosque_name = data.get("mosque", "مزگەوتی دیاریکراو")
+        manual_juz = data.get("manualJuz")
+        start_date_str = data.get("startDate")
 
-    try:
-        start_date = datetime.strptime(str(start_date_str).split("T")[0], "%Y-%m-%d")
-    except:
-        start_date = datetime.now()
-
-    now = datetime.now()
-    diff_weeks = abs((now - start_date).days) // 7
-    calculated_juz = (diff_weeks % 30) + 1
-    final_juz = manual_juz if manual_juz else calculated_juz
+        if manual_juz:
+            try:
+                final_juz = int(manual_juz)
+            except:
+                pass
+        elif start_date_str:
+            try:
+                start_date = datetime.strptime(str(start_date_str).split("T")[0], "%Y-%m-%d")
+                now = datetime.now()
+                diff_weeks = abs((now - start_date).days) // 7
+                final_juz = (diff_weeks % 30) + 1
+            except:
+                pass
 
     kurdish_ordinals = [
         'یەکەم', 'دووهەم', 'سێیەم', 'چوارەم', 'پێنجەم', 'شەشەم', 'حەوتەم', 'هەشتەم', 'نۆیەم', 'دەیەم', 
@@ -82,7 +89,7 @@ def get_dynamic_location_message():
     return msg
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ رۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
+    msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
         [InlineKeyboardButton("✨ 📱 کردنەوەی بەرنامەی هەفتانە ✨", web_app=WebAppInfo(url=MINI_APP_URL))],
         [InlineKeyboardButton("🕌 پۆستەری مەراسیم", web_app=WebAppInfo(url=POSTER_URL))],
@@ -119,7 +126,7 @@ async def channel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg, parse_mode="HTML")
 
 async def contact_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = f"<b>📞 بۆ پەیوەندی گرتن لەگەڵ بەڕێوەبەرانی کۆڕ، دەتوانن نامە بۆ ئەم ئایدییە بنێرن:</b>\n\n👤<b> @sinazarefar</b>"
+    msg = f"<b>📞 بۆ پەیوەندی گرتن لەگەڵ بەڕێوەبەرانی کۆڕ، دەتوانن نامە بۆ ئەم ئایدییە بنێرن:</b>\n\n👤<b> {ADMIN_URL}</b>"
     await update.message.reply_text(msg, parse_mode="HTML")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -141,6 +148,7 @@ async def main_async():
     keep_alive()
     app = Application.builder().token(TOKEN).build()
 
+    # ثبت تمامی دستورات
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("app", app_command))
     app.add_handler(CommandHandler("poster", poster_command))
@@ -151,7 +159,7 @@ async def main_async():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت آپدیت شد و روشن است...")
+    print("ربات پایتون با تمامی دستورات فعال شد...")
     
     await app.initialize()
     await app.start()
