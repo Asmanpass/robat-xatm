@@ -28,7 +28,7 @@ MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
-ADMIN_URL = "@sinazarefar"
+ADMIN_URL = "https://t.me/sinazarefar"
 
 def to_persian_num(num_str):
     if num_str is None:
@@ -47,8 +47,6 @@ def get_sheet_data():
 
 def get_dynamic_location_message():
     data = get_sheet_data()
-    
-    # مقادیر پیش‌فرض امن در صورت عدم اتصال به شیت
     mosque_name = "مزگەوتی دیاریکراو"
     final_juz = 1
     start_date_str = None
@@ -88,6 +86,7 @@ def get_dynamic_location_message():
     )
     return msg
 
+# تعریف تمامی توابع دستورات ربات
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
@@ -148,7 +147,7 @@ async def main_async():
     keep_alive()
     app = Application.builder().token(TOKEN).build()
 
-    # ثبت تمامی دستورات
+    # ثبت دقیق تک‌تک دستورات
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("app", app_command))
     app.add_handler(CommandHandler("poster", poster_command))
@@ -159,7 +158,7 @@ async def main_async():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با تمامی دستورات فعال شد...")
+    print("ربات پایتون با موفقیت و تمامی دستورات فعال شد...")
     
     await app.initialize()
     await app.start()
