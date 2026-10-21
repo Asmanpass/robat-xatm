@@ -1,6 +1,5 @@
 import os
 import requests
-import asyncio
 import datetime
 import jdatetime
 import pytz
@@ -8,6 +7,7 @@ from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from threading import Thread
+import time
 
 # ==========================================
 # ترفند رایگان ماندن در Render با Flask
@@ -28,19 +28,19 @@ def keep_alive():
 # ==========================================
 # تنظیمات اصلی ربات
 # ==========================================
-TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM" # اگر توکن عوض شده، اینجا تغییر دهید
-GROUP_ID = "@quran_bane" # آیدی کانال رسمی برای ارسال پست‌های خودکار
+TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM" 
+GROUP_ID = "@quran_bane" 
 
-GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw421hMt0_9zQIoOp_7bF5J8eLMZsAkQ3GGNEhjQab2y_xsxIFTmVZSogyTB-V5AevWbg/exec"
+GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
-POSTER_URL = "https://asmanpass.github.io/pooster/"
+POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
 ADMIN_URL = "https://t.me/sinazarefar"
 
 # ==========================================
-# توابع کمکی تقویم و تبدیل اعداد
+# توابع کمکی تقویم و شیت
 # ==========================================
 def to_persian_num(num_str):
     if num_str is None: return ''
@@ -49,15 +49,11 @@ def to_persian_num(num_str):
 
 def get_sheet_data():
     try:
-        # اضافه کردن زمان فعلی به انتهای لینک برای جلوگیری از کش شدن اطلاعات قدیمی
-        import time
         no_cache_url = f"{GOOGLE_WEB_APP_URL}?t={int(time.time())}"
-        
         res = requests.get(no_cache_url, timeout=5)
-        if res.status_code == 200: 
-            return res.json()
+        if res.status_code == 200: return res.json()
     except Exception as e:
-        print("Error fetching sheet data:", e)
+        print("Error fetching sheet:", e)
     return None
 
 def get_dynamic_location_message():
@@ -93,9 +89,6 @@ def get_help_message():
             "<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە. "
             "بە لێدانی دوگمەی مینی‌ئەپ، دەتوانیت کات، شوێن، جوز‌ء و ناوی قوڕئانخوێنەکان ببینی.</b>")
 
-# ==========================================
-# دیتابیسِ زمان‌بندی اوقات شرعی یک سال
-# ==========================================
 YEAR_TIMES = {
     "1": {"1": ["05:04","06:35","12:41","03:47","06:45","07:55"], "2": ["05:03","06:33","12:41","03:48","06:45","07:56"], "3": ["05:02","06:31","12:41","03:48","06:46","07:56"], "4": ["05:01","06:30","12:41","03:48","06:46","07:57"], "5": ["05:00","06:28","12:40","03:48","06:48","07:58"], "6": ["04:59","06:26","12:40","03:49","06:48","07:59"], "7": ["04:57","06:24","12:40","03:49","06:49","07:59"], "8": ["04:55","06:22","12:40","03:49","06:50","08:00"], "9": ["04:53","06:21","12:40","03:49","06:50","08:00"], "10": ["04:51","06:19","12:39","03:50","06:51","08:01"], "11": ["04:49","06:18","12:39","03:50","06:52","08:02"], "12": ["04:47","06:16","12:39","03:50","06:53","08:03"], "13": ["04:45","06:15","12:39","03:50","06:53","08:04"], "14": ["04:43","06:13","12:39","03:51","06:54","08:05"], "15": ["04:41","06:11","12:38","03:51","06:55","08:06"], "16": ["04:39","06:10","12:38","03:51","06:56","08:07"], "17": ["04:38","06:09","12:38","03:52","06:56","08:08"], "18": ["04:37","06:08","12:38","03:52","06:58","08:09"], "19": ["04:36","06:07","12:38","03:52","06:59","08:10"], "20": ["04:35","06:06","12:37","03:53","07:00","08:11"], "21": ["04:34","06:05","12:37","03:53","07:01","08:12"], "22": ["04:32","06:04","12:37","03:54","07:02","08:13"], "23": ["04:31","06:03","12:37","03:54","07:03","08:14"], "24": ["04:30","06:02","12:37","03:55","07:04","08:15"], "25": ["04:29","06:01","12:37","03:55","07:04","08:15"], "26": ["04:28","06:00","12:36","03:56","07:05","08:16"], "27": ["04:27","05:59","12:36","03:56","07:06","08:17"], "28": ["04:26","05:59","12:36","03:57","07:07","08:17"], "29": ["04:25","05:58","12:36","03:58","07:08","08:18"], "30": ["04:25","05:58","12:36","03:59","07:08","08:19"], "31": ["04:23","05:57","12:36","03:59","07:09","08:20"]},
     "2": {"1": ["04:22","05:56","12:36","04:00","07:10","08:21"], "2": ["04:21","05:55","12:36","04:00","07:11","08:22"], "3": ["04:20","05:54","12:36","04:00","07:12","08:23"], "4": ["04:18","05:52","12:35","04:00","07:13","08:24"], "5": ["04:17","05:51","12:35","04:01","07:14","08:25"], "6": ["04:15","05:50","12:35","04:01","07:15","08:26"], "7": ["04:14","05:48","12:35","04:01","07:16","08:27"], "8": ["04:13","05:47","12:35","04:01","07:17","08:28"], "9": ["04:11","05:45","12:34","04:02","07:18","08:29"], "10": ["04:10","05:43","12:34","04:02","07:19","08:30"], "11": ["04:08","05:41","12:34","04:03","07:20","08:31"], "12": ["04:07","05:40","12:34","04:03","07:21","08:32"], "13": ["04:06","05:39","12:34","04:03","07:22","08:33"], "14": ["04:04","05:38","12:33","04:03","07:23","08:34"], "15": ["04:02","05:37","12:33","04:03","07:24","08:35"], "16": ["04:01","05:36","12:32","04:03","07:25","08:36"], "17": ["03:58","05:35","12:32","04:04","07:26","08:37"], "18": ["03:57","05:34","12:32","04:04","07:27","08:38"], "19": ["03:55","05:33","12:32","04:04","07:28","08:39"], "20": ["03:53","05:32","12:32","04:04","07:28","08:40"], "21": ["03:51","05:31","12:32","04:05","07:29","08:41"], "22": ["03:50","05:30","12:32","04:05","07:29","08:42"], "23": ["03:49","05:29","12:32","04:05","07:30","08:43"], "24": ["03:47","05:28","12:31","04:06","07:30","08:44"], "25": ["03:46","05:27","12:31","04:06","07:31","08:45"], "26": ["03:45","05:26","12:31","04:06","07:32","08:46"], "27": ["03:43","05:25","12:31","04:07","07:32","08:47"], "28": ["03:42","05:24","12:31","04:07","07:33","08:48"], "29": ["03:41","05:23","12:30","04:07","07:34","08:49"], "30": ["03:40","05:21","12:30","04:08","07:34","08:50"], "31": ["03:39","05:21","12:30","04:08","07:34","08:51"]},
@@ -111,14 +104,15 @@ YEAR_TIMES = {
     "12": {"1": ["05:39","07:09","12:45","03:40","06:19","07:29"], "2": ["05:37","07:08","12:45","03:40","06:20","07:28"], "3": ["05:36","07:07","12:44","03:40","06:21","07:29"], "4": ["05:35","07:06","12:44","03:41","06:21","07:31"], "5": ["05:34","07:05","12:44","03:41","06:22","07:32"], "6": ["05:32","07:04","12:44","03:41","06:23","07:34"], "7": ["05:31","07:03","12:44","03:41","06:23","07:35"], "8": ["05:30","07:02","12:43","03:42","06:24","07:38"], "9": ["05:29","07:01","12:43","03:42","06:25","07:39"], "10": ["05:28","07:00","12:43","03:42","06:26","07:40"], "11": ["05:27","06:59","12:43","03:42","06:27","07:42"], "12": ["05:26","06:58","12:43","03:42","06:28","07:43"], "13": ["05:25","06:57","12:43","03:43","06:29","07:45"], "14": ["05:24","06:56","12:42","03:43","06:30","07:46"], "15": ["05:23","06:55","12:42","03:43","06:31","07:47"], "16": ["05:22","06:54","12:42","03:43","06:32","07:47"], "17": ["05:21","06:54","12:42","03:43","06:32","07:47"], "18": ["05:20","06:52","12:42","03:43","06:33","07:48"], "19": ["05:19","06:52","12:41","03:44","06:34","07:49"], "20": ["05:18","06:51","12:41","03:44","06:35","07:50"], "21": ["05:17","06:50","12:41","03:44","06:36","07:50"], "22": ["05:16","06:48","12:41","03:45","06:37","07:51"], "23": ["05:15","06:47","12:40","03:45","06:38","07:51"], "24": ["05:13","06:46","12:40","03:46","06:39","07:52"], "25": ["05:12","06:44","12:40","03:46","06:40","07:52"], "26": ["05:10","06:42","12:40","03:46","06:41","07:53"], "27": ["05:08","06:41","12:40","03:46","06:42","07:53"], "28": ["05:07","06:39","12:40","03:47","06:43","07:54"], "29": ["05:06","06:38","12:41","03:47","06:44","07:54"], "30": ["05:05","06:37","12:41","03:47","06:45","07:55"]}
 }
 
-# ==========================================
-# وظیفه ۱: ارسال اوقات شرعی نیمه‌شب
-# ==========================================
 async def send_midnight_prayer_times(context: ContextTypes.DEFAULT_TYPE):
-    now = jdatetime.date.today()
-    m_sh = str(now.month)
-    d_sh = str(now.day)
-    y_sh = str(now.year)
+    # تنظیم دقیق منطقه زمانی تهران
+    tehran_tz = pytz.timezone('Asia/Tehran')
+    now_tehran = datetime.datetime.now(tehran_tz)
+    now_shamsi = jdatetime.date.fromgregorian(date=now_tehran.date())
+    
+    m_sh = str(now_shamsi.month)
+    d_sh = str(now_shamsi.day)
+    y_sh = str(now_shamsi.year)
     
     kurdish_months = {"1": "خاکەلێوە", "2": "بانەمەڕ", "3": "جۆزەردان", "4": "پووشپەڕ", "5": "خەرمانان", "6": "گەلاوێژ", "7": "ڕەزبەر", "8": "خەزەڵوەر", "9": "سەرماوەز", "10": "بەفرانبار", "11": "ڕێبەندان", "12": "ڕەشەمە"}
     date_shamsi_for_prayer = f"{to_persian_num(d_sh)}ی {kurdish_months.get(m_sh, '')}ی {to_persian_num(y_sh)}"
@@ -126,9 +120,8 @@ async def send_midnight_prayer_times(context: ContextTypes.DEFAULT_TYPE):
     today_times = YEAR_TIMES.get(m_sh, {}).get(d_sh)
     if not today_times: return
 
-    # در پایتون 0=دوشنبه, 4=جمعه, 6=یکشنبه
     kurdish_days = ["دووشەممە", "سێشەممە", "چوارشەممە", "پێنجشەممە", "هەینی", "شەممە", "یەکشەممە"]
-    day_name = kurdish_days[datetime.datetime.now().weekday()]
+    day_name = kurdish_days[now_tehran.weekday()]
 
     msg = (f"🌙 <b>کاتە شرعییەکانی ئەمڕۆ بە ئاسۆی شاری بانە و دەوروبەر</b>\n"
            f"📅 <i>{day_name}، {date_shamsi_for_prayer}</i>\n\n"
@@ -148,40 +141,35 @@ async def send_midnight_prayer_times(context: ContextTypes.DEFAULT_TYPE):
         "https://raw.githubusercontent.com/Asmanpass/pooster/main/midnight/t5.jpg", "https://raw.githubusercontent.com/Asmanpass/pooster/main/midnight/t6.jpg",
         "https://raw.githubusercontent.com/Asmanpass/pooster/main/midnight/t7.jpg"
     ]
-    day_of_month = int(d_sh)
-    selected_photo_url = night_photos[day_of_month % len(night_photos)]
+    selected_photo_url = night_photos[int(d_sh) % len(night_photos)]
 
     try:
         await context.bot.send_photo(chat_id=GROUP_ID, photo=selected_photo_url, caption=msg, parse_mode="HTML")
-    except Exception as e:
-        print(f"Error sending midnight prayer: {e}")
+    except:
         await context.bot.send_message(chat_id=GROUP_ID, text=msg, parse_mode="HTML")
 
-# ==========================================
-# وظیفه ۲: ارسال پیام تقویم صبحگاهی
-# ==========================================
 async def send_morning_date_message(context: ContextTypes.DEFAULT_TYPE):
-    now_gregorian = datetime.datetime.now()
-    now_shamsi = jdatetime.date.today()
+    tehran_tz = pytz.timezone('Asia/Tehran')
+    now_tehran = datetime.datetime.now(tehran_tz)
+    now_shamsi = jdatetime.date.fromgregorian(date=now_tehran.date())
     
     kurdish_days = ["دووشەممە", "سێشەممە", "چوارشەممە", "پێنجشەممە", "هەینی", "شەممە", "یەکشەممە"]
-    day_name = kurdish_days[now_gregorian.weekday()]
+    day_name = kurdish_days[now_tehran.weekday()]
     
     kurdish_months = {"1": "خاکەلێوە", "2": "بانەمەڕ", "3": "جۆزەردان", "4": "پووشپەڕ", "5": "خەرمانان", "6": "گەلاوێژ", "7": "ڕەزبەر", "8": "خەزەڵوەر", "9": "سەرماوەز", "10": "بەفرانبار", "11": "ڕێبەندان", "12": "ڕەشەمە"}
     date_shamsi = f"{to_persian_num(now_shamsi.day)}ی {kurdish_months.get(str(now_shamsi.month), '')}ی {to_persian_num(now_shamsi.year)}"
-    date_gregorian = f"{to_persian_num(now_gregorian.day)}-{to_persian_num(now_gregorian.month)}-{to_persian_num(now_gregorian.year)}"
+    date_gregorian = f"{to_persian_num(now_tehran.day)}-{to_persian_num(now_tehran.month)}-{to_persian_num(now_tehran.year)}"
     
-    # گرفتن تاریخ قمری زنده از API رایگان
     date_lunar = ""
     try:
-        g_date = now_gregorian.strftime("%d-%m-%Y")
+        g_date = now_tehran.strftime("%d-%m-%Y")
         res = requests.get(f"http://api.aladhan.com/v1/gToH?date={g_date}", timeout=5).json()
         hijri = res['data']['hijri']
         date_lunar = f"{to_persian_num(hijri['day'])}ی {hijri['month']['ar']}ی {to_persian_num(hijri['year'])}"
     except:
         date_lunar = "مانگی کۆچی"
 
-    is_friday = now_gregorian.weekday() == 4 # جمعه در پایتون برابر 4 است
+    is_friday = now_tehran.weekday() == 4 
 
     if is_friday:
         caption = (f"☀️ <b>بەیانی هەینیتان بەخێر و پڕ لە نوور و بەرەکەت</b> 🕊️\n\n"
@@ -214,18 +202,13 @@ async def send_morning_date_message(context: ContextTypes.DEFAULT_TYPE):
             "https://raw.githubusercontent.com/Asmanpass/pooster/main/morning/11.jpg", "https://raw.githubusercontent.com/Asmanpass/pooster/main/morning/12.jpg"
         ]
 
-    day_of_month = now_shamsi.day
-    selected_photo_url = photos[day_of_month % len(photos)]
+    selected_photo_url = photos[now_shamsi.day % len(photos)]
 
     try:
         await context.bot.send_photo(chat_id=GROUP_ID, photo=selected_photo_url, caption=caption, parse_mode="HTML")
-    except Exception as e:
-        print(f"Error sending morning message: {e}")
+    except:
         await context.bot.send_message(chat_id=GROUP_ID, text=caption, parse_mode="HTML")
 
-# ==========================================
-# مدیریت دستورات و دکمه‌های ربات
-# ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
@@ -267,10 +250,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == "loc": await query.message.reply_text(get_dynamic_location_message(), parse_mode="HTML")
     elif query.data == "hlp": await query.message.reply_text(get_help_message(), parse_mode="HTML")
 
-# ==========================================
-# استارت و راه‌اندازی ربات با زمان‌بندی
-# ==========================================
-async def main_async():
+def main():
     keep_alive()
     app = Application.builder().token(TOKEN).build()
 
@@ -284,28 +264,15 @@ async def main_async():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    # تنظیم زمان‌بندی (تایم زون ایران)
     tehran_tz = pytz.timezone('Asia/Tehran')
     
-    # اجرای پست نیمه‌شب در ساعت 00:01
-    midnight_time = datetime.time(hour=0, minute=1, tzinfo=tehran_tz)
-    app.job_queue.run_daily(send_midnight_prayer_times, time=midnight_time)
-    
-    # اجرای پست صبحگاهی در ساعت 08:00
-    morning_time = datetime.time(hour=8, minute=0, tzinfo=tehran_tz)
-    app.job_queue.run_daily(send_morning_date_message, time=morning_time)
+    app.job_queue.run_daily(send_midnight_prayer_times, time=datetime.time(hour=0, minute=1, tzinfo=tehran_tz))
+    app.job_queue.run_daily(send_morning_date_message, time=datetime.time(hour=8, minute=0, tzinfo=tehran_tz))
 
-    print("ربات پایتون به همراه سیستم زمان‌بندی پیام‌ها با موفقیت فعال شد...")
+    print("ربات پایتون با تقویم تهران فعال شد...")
     
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling(drop_pending_updates=True)
-    
-    while True:
-        await asyncio.sleep(3600)
-
-def main():
-    asyncio.run(main_async())
+    # استفاده از متد قدرتمندتر برای جلوگیری از قطع شدن
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
