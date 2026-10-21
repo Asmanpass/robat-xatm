@@ -28,7 +28,7 @@ MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
-ADMIN_URL = "https://t.me/sinazarefar"
+ADMIN_URL = "@sinazarefar"
 
 def to_persian_num(num_str):
     if num_str is None:
