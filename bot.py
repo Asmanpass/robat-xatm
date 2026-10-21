@@ -1,5 +1,6 @@
 import os
 import requests
+import asyncio
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -13,13 +14,12 @@ def home():
     return "Bot is alive and running!"
 
 def run_web():
-    app_flask.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    app_flask.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
 
 def keep_alive():
     t = Thread(target=run_web)
     t.start()
 
-# تنظیمات ربات و لینک خروجی doGet گوگل اسکریپت شما
 TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM"
 GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
@@ -72,7 +72,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     
     if query.data == "loc":
-        # خواندن اطلاعات از گوگل شیت شما
         data = get_sheet_data()
         mosque_name = data.get("mosque", "مزگەوتی دیاریکراو") if data else "مزگەوتی دیاریکراو"
         
@@ -87,7 +86,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         hlp_msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز دروست کراوە.</b>"
         await query.message.reply_text(hlp_msg, parse_mode="HTML")
 
-def main():
+async def main_async():
+    # روشن کردن سرور وب در پس‌زمینه
     keep_alive()
     
     app = ApplicationBuilder().token(TOKEN).build()
@@ -97,8 +97,19 @@ def main():
     app.add_handler(CommandHandler("azan", azan_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت به شیت متصل شد و روشن است...")
-    app.run_polling()
+    print("ربات پایتون با موفقیت متصل شد و شروع به کار کرد...")
+    
+    # اجرای صحیح و بدون خطای polling در نسخه جدید
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(drop_pending_updates=True)
+    
+    # نگه داشتن برنامه روشن
+    while True:
+        await asyncio.sleep(3600)
+
+def main():
+    asyncio.run(main_async())
 
 if __name__ == "__main__":
     main()
