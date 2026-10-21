@@ -49,9 +49,15 @@ def to_persian_num(num_str):
 
 def get_sheet_data():
     try:
-        res = requests.get(GOOGLE_WEB_APP_URL, timeout=5)
-        if res.status_code == 200: return res.json()
-    except: pass
+        # اضافه کردن زمان فعلی به انتهای لینک برای جلوگیری از کش شدن اطلاعات قدیمی
+        import time
+        no_cache_url = f"{GOOGLE_WEB_APP_URL}?t={int(time.time())}"
+        
+        res = requests.get(no_cache_url, timeout=5)
+        if res.status_code == 200: 
+            return res.json()
+    except Exception as e:
+        print("Error fetching sheet data:", e)
     return None
 
 def get_dynamic_location_message():
