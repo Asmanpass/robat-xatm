@@ -34,7 +34,7 @@ GROUP_ID = "@quran_bane" # آیدی کانال رسمی برای ارسال پس
 GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
-POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
+POSTER_URL = "https://asmanpass.github.io/pooster/"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
 ADMIN_URL = "https://t.me/sinazarefar"
