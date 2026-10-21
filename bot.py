@@ -1,6 +1,7 @@
 import os
 import requests
 import asyncio
+from datetime import datetime, timedelta
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -24,10 +25,16 @@ TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM"
 GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
-POSTER_URL = "https://asmanpass.github.io/pooster/"
+POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
-ADMIN_URL = "https://t.me/sinazarefar"
+ADMIN_URL = "https://t.me/sina11z"
+
+def to_persian_num(num_str):
+    if num_str is None:
+        return ''
+    persian_digits = str.maketrans('0123456789', '۰۱٢۳۴۵۶۷۸۹')
+    return str(num_str).translate(persian_digits)
 
 def get_sheet_data():
     try:
@@ -38,11 +45,43 @@ def get_sheet_data():
         print("Error fetching sheet data:", e)
     return None
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+def get_dynamic_location_message():
+    data = get_sheet_data()
+    if not data:
+        return "<b>📍 ناونیشانی مزگەوتی ئەم هەفتەیە:</b>\n\n<b>🕌 مزگەوتی دیاریکراو</b>"
+
+    start_date_str = data.get("startDate")
+    manual_juz = data.get("manualJuz")
+    mosque_name = data.get("mosque", "مزگەوتی دیاریکراو")
+
+    try:
+        start_date = datetime.strptime(start_date_str.split("T")[0], "%Y-%m-%d")
+    except:
+        start_date = datetime.now()
+
+    now = datetime.now()
+    diff_weeks = abs((now - start_date).days) // 7
+    calculated_juz = (diff_weeks % 30) + 1
+    final_juz = manual_juz if manual_juz else calculated_juz
+
+    kurdish_ordinals = [
+        'یەکەم', 'دووهەم', 'سێیەم', 'چوارەم', 'پێنجەم', 'شەشەم', 'حەوتەم', 'هەشتەم', 'نۆیەم', 'دەیەم', 
+        'یانزەیەم', 'دوانزەیەم', 'سیانزەیەم', 'چواردەیەم', 'پازدەیەم', 'شازدەیەم', 'حەڤدەیەم', 'هەژدەیەم', 
+        'نۆزدەیەم', 'بیستەم', 'بیست و یەکەم', 'بیست و دووهەم', 'بیست و سێیەم', 'بیست و چوارەم', 
+        'بیست و پێنجەم', 'بیست و شەشەم', 'بیست و حەوتەم', 'بیست و هەشتەم', 'بیست و نۆیەم', 'سییەم'
+    ]
+    juz_word = kurdish_ordinals[final_juz - 1] if 1 <= final_juz <= 30 else to_persian_num(final_juz)
+
     msg = (
-        "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\n"
-        "تکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
+        "<b>📍 ناونیشانی مزگەوتی ئەم هەفتەیە:</b>\n\n"
+        f"<b>🕌 {mosque_name}</b>\n\n"
+        f"<b>📖 تیلاوەتی: جوزئی {juz_word} ({to_persian_num(final_juz)})</b>\n\n"
+        "<b>⏰ کات: چوارشەممە، دوای نوێژی عیشا</b>"
     )
+    return msg
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ رۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
         [InlineKeyboardButton("✨ 📱 کردنەوەی بەرنامەی هەفتانە ✨", web_app=WebAppInfo(url=MINI_APP_URL))],
         [InlineKeyboardButton("🕌 پۆستەری مەراسیم", web_app=WebAppInfo(url=POSTER_URL))],
@@ -56,54 +95,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("🧑‍💻 ئەدمین", url=ADMIN_URL)
         ]
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(msg, parse_mode="HTML", reply_markup=reply_markup)
-
-async def app_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton("📱 کردنەوەی بەرنامەی هەفتانە", web_app=WebAppInfo(url=MINI_APP_URL))]]
-    await update.message.reply_text("<b>📱 بۆ کردنەوەی بەرنامەی هەفتانە (مینی‌ئەپ) کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
-
-async def azan_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton("🕰 کاتی بانگ بە ئاسۆی بانە", web_app=WebAppInfo(url=AZAN_URL))]]
-    await update.message.reply_text("<b>🕰 بۆ بینینی کاتی بانگ بە ئاسۆی شاری بانە کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
+    await update.message.reply_text(msg, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
     if query.data == "loc":
-        data = get_sheet_data()
-        mosque_name = data.get("mosque", "مزگەوتی دیاریکراو") if data else "مزگەوتی دیاریکراو"
-        
-        loc_msg = (
-            "<b>📍 ناونیشانی مزگەوتی ئەم هەفتەیە:</b>\n\n"
-            f"<b>🕌 {mosque_name}</b>\n\n"
-            "<b>⏰ کات: چوارشەممە، دوای نوێژی عیشا</b>"
-        )
-        await query.message.reply_text(loc_msg, parse_mode="HTML")
-        
+        msg = get_dynamic_location_message()
+        await query.message.reply_text(msg, parse_mode="HTML")
     elif query.data == "hlp":
-        hlp_msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز دروست کراوە.</b>"
-        await query.message.reply_text(hlp_msg, parse_mode="HTML")
+        msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە.</b>"
+        await query.message.reply_text(msg, parse_mode="HTML")
 
 async def main_async():
-    # روشن کردن سرور وب در پس‌زمینه
     keep_alive()
-    
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("app", app_command))
-    app.add_handler(CommandHandler("azan", azan_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت متصل شد و شروع به کار کرد...")
+    print("ربات پایتون با موفقیت و به صورت ایمن روشن شد...")
     
     await app.initialize()
     await app.start()
     await app.updater.start_polling(drop_pending_updates=True)
     
-    # نگه داشتن برنامه روشن
     while True:
         await asyncio.sleep(3600)
 
