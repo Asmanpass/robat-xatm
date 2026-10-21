@@ -86,7 +86,13 @@ def get_dynamic_location_message():
     )
     return msg
 
-# تعریف تمامی توابع دستورات ربات
+def get_help_message():
+    return (
+        "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n"
+        "<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە. "
+        "بە لێدانی دوگمەی مینی‌ئەپ، دەتوانیت کات، شوێن، جوز‌ء و ناوی قوڕئانخوێنەکان ببینی.</b>"
+    )
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
@@ -129,7 +135,7 @@ async def contact_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg, parse_mode="HTML")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە. بە لێدانی دوگمەی مینی‌ئەپ، دەتوانیت کات، شوێن، جوز‌ء و ناوی قوڕئانخوێنەکان ببینی.</b>"
+    msg = get_help_message()
     await update.message.reply_text(msg, parse_mode="HTML")
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -140,14 +146,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         msg = get_dynamic_location_message()
         await query.message.reply_text(msg, parse_mode="HTML")
     elif query.data == "hlp":
-        msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە.</b>"
+        msg = get_help_message()
         await query.message.reply_text(msg, parse_mode="HTML")
 
 async def main_async():
     keep_alive()
     app = Application.builder().token(TOKEN).build()
 
-    # ثبت دقیق تک‌تک دستورات
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("app", app_command))
     app.add_handler(CommandHandler("poster", poster_command))
@@ -158,7 +163,7 @@ async def main_async():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت و تمامی دستورات فعال شد...")
+    print("ربات پایتون با موفقیت آپدیت شد و تمامی بخش‌ها هماهنگ هستند...")
     
     await app.initialize()
     await app.start()
