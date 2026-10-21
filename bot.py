@@ -29,7 +29,6 @@ def keep_alive():
 # ==========================================
 # تنظیمات اصلی ربات
 # ==========================================
-# توکن جدید شما:
 TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM" 
 GROUP_ID = "@quran_bane" 
 
@@ -42,7 +41,7 @@ CHANNEL_URL = "https://t.me/quran_bane"
 ADMIN_URL = "https://t.me/sinazarefar"
 
 # ==========================================
-# توابع کمکی تقویم و شیت
+# توابع کمکی
 # ==========================================
 def to_persian_num(num_str):
     if num_str is None: return ''
@@ -210,6 +209,9 @@ async def send_morning_date_message(context: ContextTypes.DEFAULT_TYPE):
     except:
         await context.bot.send_message(chat_id=GROUP_ID, text=caption, parse_mode="HTML")
 
+# ==========================================
+# توابع اصلی ربات و دکمه‌ها
+# ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
@@ -251,16 +253,30 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == "loc": await query.message.reply_text(get_dynamic_location_message(), parse_mode="HTML")
     elif query.data == "hlp": await query.message.reply_text(get_help_message(), parse_mode="HTML")
 
+# ==========================================
+# دستورات تست مخفی برای ادمین
+# ==========================================
+async def test_night_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("⏳ در حال اجرای تست پیام نیمه‌شب (ارسال به گروه)...")
+    await send_midnight_prayer_times(context)
+    await update.message.reply_text("✅ پیام نیمه‌شب با موفقیت به کانال/گروه ارسال شد.")
+
+async def test_morning_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("⏳ در حال اجرای تست پیام صبحگاهی (ارسال به گروه)...")
+    await send_morning_date_message(context)
+    await update.message.reply_text("✅ پیام صبحگاهی با موفقیت به کانال/گروه ارسال شد.")
+
+# ==========================================
+# اجرای اصلی ربات
+# ==========================================
 def main():
-    # ========================================================
-    # حل خطای RuntimeError: There is no current event loop در پایتون 3.14
-    # ========================================================
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     
     keep_alive()
     app = Application.builder().token(TOKEN).build()
 
+    # ثبت دستورات عادی
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("app", app_command))
     app.add_handler(CommandHandler("poster", poster_command))
@@ -271,13 +287,17 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
+    # ثبت دستورات تست
+    app.add_handler(CommandHandler("test_night", test_night_command))
+    app.add_handler(CommandHandler("test_morning", test_morning_command))
+
     tehran_tz = pytz.timezone('Asia/Tehran')
     
+    # تنظیم زمان‌بندی‌های اصلی
     app.job_queue.run_daily(send_midnight_prayer_times, time=datetime.time(hour=0, minute=1, tzinfo=tehran_tz))
     app.job_queue.run_daily(send_morning_date_message, time=datetime.time(hour=8, minute=0, tzinfo=tehran_tz))
 
     print("ربات پایتون با تقویم تهران فعال شد...")
-    
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
