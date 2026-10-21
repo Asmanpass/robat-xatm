@@ -1,12 +1,27 @@
 import os
-import requests
+import asyncio
+from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from threading import Thread
 
-# توکن جدید ربات شما
+# ترفند رایگان ماندن در Render با Flask
+app_flask = Flask('')
+
+@app_flask.route('/')
+def home():
+    return "Bot is alive and running!"
+
+def run_web():
+    app_flask.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+def keep_alive():
+    t = Thread(target=run_web)
+    t.start()
+
+# تنظیمات ربات
 TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM"
 
-# لینک‌های مینی‌اپ و بخش‌های مختلف
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 POSTER_URL = "https://asmanpass.github.io/pooster/"
 AZAN_URL = "https://asmanpass.github.io/azan"
@@ -54,6 +69,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(hlp_msg, parse_mode="HTML")
 
 def main():
+    # روشن کردن سرور وب سبک برای پلن رایگان
+    keep_alive()
+    
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -61,7 +79,7 @@ def main():
     app.add_handler(CommandHandler("azan", azan_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت روشن شد و آماده به کار است...")
+    print("ربات پایتون روی وب سرویس رایگان روشن شد...")
     app.run_polling()
 
 if __name__ == "__main__":
