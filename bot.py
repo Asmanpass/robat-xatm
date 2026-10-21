@@ -3,6 +3,7 @@ import requests
 import datetime
 import jdatetime
 import pytz
+import asyncio
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -28,6 +29,7 @@ def keep_alive():
 # ==========================================
 # تنظیمات اصلی ربات
 # ==========================================
+# توکن جدید شما:
 TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM" 
 GROUP_ID = "@quran_bane" 
 
@@ -105,7 +107,6 @@ YEAR_TIMES = {
 }
 
 async def send_midnight_prayer_times(context: ContextTypes.DEFAULT_TYPE):
-    # تنظیم دقیق منطقه زمانی تهران
     tehran_tz = pytz.timezone('Asia/Tehran')
     now_tehran = datetime.datetime.now(tehran_tz)
     now_shamsi = jdatetime.date.fromgregorian(date=now_tehran.date())
@@ -251,6 +252,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "hlp": await query.message.reply_text(get_help_message(), parse_mode="HTML")
 
 def main():
+    # ========================================================
+    # حل خطای RuntimeError: There is no current event loop در پایتون 3.14
+    # ========================================================
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
     keep_alive()
     app = Application.builder().token(TOKEN).build()
 
@@ -271,7 +278,6 @@ def main():
 
     print("ربات پایتون با تقویم تهران فعال شد...")
     
-    # استفاده از متد قدرتمندتر برای جلوگیری از قطع شدن
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
