@@ -3,7 +3,7 @@ import requests
 import asyncio
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 from threading import Thread
 
 # ترفند رایگان ماندن در Render با Flask
@@ -90,7 +90,7 @@ async def main_async():
     # روشن کردن سرور وب در پس‌زمینه
     keep_alive()
     
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("app", app_command))
@@ -99,7 +99,6 @@ async def main_async():
 
     print("ربات پایتون با موفقیت متصل شد و شروع به کار کرد...")
     
-    # اجرای صحیح و بدون خطای polling در نسخه جدید
     await app.initialize()
     await app.start()
     await app.updater.start_polling(drop_pending_updates=True)
