@@ -1,7 +1,7 @@
 import os
 import requests
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -55,7 +55,7 @@ def get_dynamic_location_message():
     mosque_name = data.get("mosque", "مزگەوتی دیاریکراو")
 
     try:
-        start_date = datetime.strptime(start_date_str.split("T")[0], "%Y-%m-%d")
+        start_date = datetime.strptime(str(start_date_str).split("T")[0], "%Y-%m-%d")
     except:
         start_date = datetime.now()
 
@@ -97,6 +97,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     await update.message.reply_text(msg, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
+async def app_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[InlineKeyboardButton("📱 کردنەوەی بەرنامەی هەفتانە", web_app=WebAppInfo(url=MINI_APP_URL))]]
+    await update.message.reply_text("<b>📱 بۆ کردنەوەی بەرنامەی هەفتانە (مینی‌ئەپ) کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
+
+async def azan_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[InlineKeyboardButton("🕰 کاتی بانگ بە ئاسۆی بانە", web_app=WebAppInfo(url=AZAN_URL))]]
+    await update.message.reply_text("<b>🕰 بۆ بینینی کاتی بانگ بە ئاسۆی شاری بانە کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
+
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -113,9 +121,11 @@ async def main_async():
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("app", app_command))
+    app.add_handler(CommandHandler("azan", azan_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت و به صورت ایمن روشن شد...")
+    print("ربات پایتون با موفقیت و به صورت کامل روشن شد...")
     
     await app.initialize()
     await app.start()
