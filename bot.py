@@ -1,5 +1,5 @@
 import os
-import asyncio
+import requests
 from flask import Flask
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -19,14 +19,24 @@ def keep_alive():
     t = Thread(target=run_web)
     t.start()
 
-# تنظیمات ربات
+# تنظیمات ربات و لینک خروجی doGet گوگل اسکریپت شما
 TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM"
+GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 POSTER_URL = "https://asmanpass.github.io/pooster/"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
 ADMIN_URL = "https://t.me/sinazarefar"
+
+def get_sheet_data():
+    try:
+        response = requests.get(GOOGLE_WEB_APP_URL, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        print("Error fetching sheet data:", e)
+    return None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
@@ -62,14 +72,22 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     
     if query.data == "loc":
-        loc_msg = "<b>📍 ناونیشانی مزگەوتی ئەم هەفتەیە:</b>\n\n<b>🕌 مزگەوتی دیاریکراو</b>\n\n<b>⏰ کات: چوارشەممە، دوای نوێژی عیشا</b>"
+        # خواندن اطلاعات از گوگل شیت شما
+        data = get_sheet_data()
+        mosque_name = data.get("mosque", "مزگەوتی دیاریکراو") if data else "مزگەوتی دیاریکراو"
+        
+        loc_msg = (
+            "<b>📍 ناونیشانی مزگەوتی ئەم هەفتەیە:</b>\n\n"
+            f"<b>🕌 {mosque_name}</b>\n\n"
+            "<b>⏰ کات: چوارشەممە، دوای نوێژی عیشا</b>"
+        )
         await query.message.reply_text(loc_msg, parse_mode="HTML")
+        
     elif query.data == "hlp":
         hlp_msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز دروست کراوە.</b>"
         await query.message.reply_text(hlp_msg, parse_mode="HTML")
 
 def main():
-    # روشن کردن سرور وب سبک برای پلن رایگان
     keep_alive()
     
     app = ApplicationBuilder().token(TOKEN).build()
@@ -79,7 +97,7 @@ def main():
     app.add_handler(CommandHandler("azan", azan_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون روی وب سرویس رایگان روشن شد...")
+    print("ربات پایتون با موفقیت به شیت متصل شد و روشن است...")
     app.run_polling()
 
 if __name__ == "__main__":
