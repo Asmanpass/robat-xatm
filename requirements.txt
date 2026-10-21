@@ -1,3 +1,5 @@
-flask==3.0.2
-requests==2.31.0
-python-telegram-bot==21.11
+flask
+requests
+jdatetime
+pytz
+python-telegram-bot[job-queue]==21.11.1
