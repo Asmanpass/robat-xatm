@@ -31,7 +31,7 @@ def keep_alive():
 TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM" 
 GROUP_ID = "@quran_bane" 
 
-GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
+GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw421hMt0_9zQIoOp_7bF5J8eLMZsAkQ3GGNEhjQab2y_xsxIFTmVZSogyTB-V5AevWbg/exec"
 
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
