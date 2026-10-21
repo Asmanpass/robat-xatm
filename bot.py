@@ -28,7 +28,7 @@ MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
-ADMIN_URL = "https://t.me/sina11z"
+ADMIN_URL = "https://t.me/sinazarefar"
 
 def to_persian_num(num_str):
     if num_str is None:
@@ -52,6 +52,7 @@ def get_dynamic_location_message():
 
     start_date_str = data.get("startDate")
     manual_juz = data.get("manualJuz")
+    # استخراج نام مسجد مستقیماً از شیت (ستون C)
     mosque_name = data.get("mosque", "مزگەوتی دیاریکراو")
 
     try:
@@ -101,9 +102,29 @@ async def app_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("📱 کردنەوەی بەرنامەی هەفتانە", web_app=WebAppInfo(url=MINI_APP_URL))]]
     await update.message.reply_text("<b>📱 بۆ کردنەوەی بەرنامەی هەفتانە (مینی‌ئەپ) کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
+async def poster_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[InlineKeyboardButton("🕌 پۆستەری مەراسیم", web_app=WebAppInfo(url=POSTER_URL))]]
+    await update.message.reply_text("<b>🕌 بۆ بینینی پۆستەری مەراسیم کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
+
 async def azan_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("🕰 کاتی بانگ بە ئاسۆی بانە", web_app=WebAppInfo(url=AZAN_URL))]]
     await update.message.reply_text("<b>🕰 بۆ بینینی کاتی بانگ بە ئاسۆی شاری بانە کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
+
+async def location_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = get_dynamic_location_message()
+    await update.message.reply_text(msg, parse_mode="HTML")
+
+async def channel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = f"<b>📢 لینکی کەناڵی فەرمی کۆڕی خەتمی قورئان:</b>\n\n<b>👉 {CHANNEL_URL}</b>"
+    await update.message.reply_text(msg, parse_mode="HTML")
+
+async def contact_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = f"<b>📞 بۆ پەیوەندی گرتن لەگەڵ بەڕێوەبەرانی کۆڕ، دەتوانن نامە بۆ ئەم ئایدییە بنێرن:</b>\n\n👤<b> @sinazarefar</b>"
+    await update.message.reply_text(msg, parse_mode="HTML")
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = "<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە. بە لێدانی دوگمەی مینی‌ئەپ، دەتوانیت کات، شوێن، جوز‌ء و ناوی قوڕئانخوێنەکان ببینی.</b>"
+    await update.message.reply_text(msg, parse_mode="HTML")
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -122,10 +143,15 @@ async def main_async():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("app", app_command))
+    app.add_handler(CommandHandler("poster", poster_command))
     app.add_handler(CommandHandler("azan", azan_command))
+    app.add_handler(CommandHandler("location", location_command))
+    app.add_handler(CommandHandler("channel", channel_command))
+    app.add_handler(CommandHandler("contact", contact_command))
+    app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CallbackQueryHandler(button_handler))
 
-    print("ربات پایتون با موفقیت و به صورت کامل روشن شد...")
+    print("ربات پایتون با موفقیت آپدیت شد و روشن است...")
     
     await app.initialize()
     await app.start()
