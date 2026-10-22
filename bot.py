@@ -37,7 +37,7 @@ GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 
 # ⚠️ حتماً لینک جدید پوستر خود را در خط زیر جایگزین کنید:
-POSTER_URL = "https://your-new-poster-url.com"
+POSTER_URL = "https://asmanpass.github.io/pooster/"
 
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
