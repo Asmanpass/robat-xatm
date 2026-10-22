@@ -73,9 +73,23 @@ def get_dynamic_location_message():
             except: pass
         elif start_date_str:
             try:
-                start_date = datetime.datetime.strptime(str(start_date_str).split("T")[0], "%Y-%m-%d")
-                now = datetime.datetime.now()
-                diff_weeks = abs((now - start_date).days) // 7
+                # ۱. تنظیم زمان دقیق به افق تهران
+                tehran_tz = pytz.timezone('Asia/Tehran')
+                now_tehran = datetime.datetime.now(tehran_tz)
+                
+                # ۲. استخراج تاریخ‌ها
+                start_date = datetime.datetime.strptime(str(start_date_str).split("T")[0], "%Y-%m-%d").date()
+                now_date = now_tehran.date()
+                
+                # ۳. محاسبه اختلاف روزها
+                diff_days = (now_date - start_date).days
+                
+                # ۴. ترفند تغییر روز: با اضافه کردن ۶ روز، پرش هفته دقیقاً در روز پنجشنبه اتفاق می‌افتد
+                if diff_days >= 0:
+                    diff_weeks = (diff_days + 6) // 7
+                else:
+                    diff_weeks = 0
+                    
                 final_juz = (diff_weeks % 30) + 1
             except: pass
 
@@ -87,7 +101,6 @@ def get_dynamic_location_message():
            f"<b>📖 تیلاوەتی: جوزئی {juz_word} ({to_persian_num(final_juz)})</b>\n\n"
            f"<b>⏰ کات: چوارشەممە، دوای نوێژی عیشا</b>")
     return msg
-
 def get_help_message():
     return ("<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n"
             "<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە. "
@@ -117,7 +130,7 @@ async def send_midnight_prayer_times(context: ContextTypes.DEFAULT_TYPE):
     d_sh = str(now_shamsi.day)
     y_sh = str(now_shamsi.year)
     
-    kurdish_months = {"1": "خاکەلێوە", "2": "بانەمەڕ", "3": "جۆزەردان", "4": "پووشپەڕ", "5": "خەرمانان", "6": "گەلاوێژ", "7": "ڕەزبەر", "8": "خەزەڵوەر", "9": "سەرماوەز", "10": "بەفرانبار", "11": "ڕێبەندان", "12": "ڕەشەمە"}
+    kurdish_months = {"1": "خاکەلێوە", "2": "بانەمەڕ", "3": "جۆزەردان", "4": "پووشپەڕ", "5": "خەرمانان", "6": "گەلاوێژ", "7": "ڕەزبەر", "8": "گەڵاڕێزان", "9": "سەرماوەز", "10": "بەفرانبار", "11": "ڕێبەندان", "12": "ڕەشەمە"}
     date_shamsi_for_prayer = f"{to_persian_num(d_sh)}ی {kurdish_months.get(m_sh, '')}ی {to_persian_num(y_sh)}"
     
     today_times = YEAR_TIMES.get(m_sh, {}).get(d_sh)
