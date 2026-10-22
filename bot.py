@@ -35,7 +35,10 @@ GROUP_ID = "@quran_bane"
 GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
-POSTER_URL = "https://tangerine-yeot-c65e22.netlify.app"
+
+# ⚠️ حتماً لینک جدید پوستر خود را در خط زیر جایگزین کنید:
+POSTER_URL = "https://your-new-poster-url.com"
+
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
 ADMIN_URL = "https://t.me/sinazarefar"
@@ -156,16 +159,22 @@ async def send_morning_date_message(context: ContextTypes.DEFAULT_TYPE):
     kurdish_days = ["دووشەممە", "سێشەممە", "چوارشەممە", "پێنجشەممە", "هەینی", "شەممە", "یەکشەممە"]
     day_name = kurdish_days[now_tehran.weekday()]
     
+    # تنظیمات ماه‌های شمسی، میلادی و قمری
     kurdish_months = {"1": "خاکەلێوە", "2": "بانەمەڕ", "3": "جۆزەردان", "4": "پووشپەڕ", "5": "خەرمانان", "6": "گەلاوێژ", "7": "ڕەزبەر", "8": "خەزەڵوەر", "9": "سەرماوەز", "10": "بەفرانبار", "11": "ڕێبەندان", "12": "ڕەشەمە"}
+    gregorian_months = {1: "جانوییە", 2: "فێورییە", 3: "مارس", 4: "ئاپریل", 5: "مەی", 6: "جوون", 7: "جوولای", 8: "ئاگۆست", 9: "سێپتامبر", 10: "ئۆکتۆبەر", 11: "نۆڤامبر", 12: "دێسامبەر"}
+    hijri_months = {1: "محەڕەم", 2: "سەفەر", 3: "ڕەبیعەلئەوەڵ", 4: "ڕەبیعەلئاخیر", 5: "جمادی‌الاول", 6: "جمادی‌الثانی", 7: "ڕەجەب", 8: "شەعبان", 9: "ڕەمەزان", 10: "شەووال", 11: "زولقەعدە", 12: "زولحەججە"}
+    
+    # ساختن تاریخ‌ها با فرمت دلخواه
     date_shamsi = f"{to_persian_num(now_shamsi.day)}ی {kurdish_months.get(str(now_shamsi.month), '')}ی {to_persian_num(now_shamsi.year)}"
-    date_gregorian = f"{to_persian_num(now_tehran.day)}-{to_persian_num(now_tehran.month)}-{to_persian_num(now_tehran.year)}"
+    date_gregorian = f"{to_persian_num(now_tehran.day)}ی {gregorian_months.get(now_tehran.month, '')}ی {to_persian_num(now_tehran.year)}"
     
     date_lunar = ""
     try:
         g_date = now_tehran.strftime("%d-%m-%Y")
         res = requests.get(f"http://api.aladhan.com/v1/gToH?date={g_date}", timeout=5).json()
         hijri = res['data']['hijri']
-        date_lunar = f"{to_persian_num(hijri['day'])}ی {hijri['month']['ar']}ی {to_persian_num(hijri['year'])}"
+        h_month_num = int(hijri['month']['number'])
+        date_lunar = f"{to_persian_num(hijri['day'])} {hijri_months.get(h_month_num, '')} {to_persian_num(hijri['year'])} هـ.ق"
     except:
         date_lunar = "مانگی کۆچی"
 
@@ -173,7 +182,7 @@ async def send_morning_date_message(context: ContextTypes.DEFAULT_TYPE):
 
     if is_friday:
         caption = (f"☀️ <b>بەیانی هەینیتان بەخێر و پڕ لە نوور و بەرەکەت</b> 🕊️\n\n"
-                   f"📅 ئەمڕۆ <b>{day_name}</b>، ڕێکەوتی <b>{date_shamsi}</b>ی هەتاوی 🍂، هاوکاتە لەگەڵ <b>{date_lunar}</b> 🌙 و <b>{date_gregorian}</b>ی زایینی 🌍.\n\n"
+                   f"📅 ئەمڕۆ <b>{day_name}</b>، <b>{date_shamsi}</b>ی هەتاوی 🍂، هاوکاتە لەگەڵ <b>{date_lunar}</b> 🌙 و <b>{date_gregorian}</b>ی زایینی 🌍.\n\n"
                    f"🌿 <b>گرنگترین سوننەتەکانی ئەمڕۆ:</b>\n\n"
                    f"📖 <b>خوێندنی سوورەتی کەهف:</b> دەبێتە هۆی هەڵبوونی نوورێک بۆ مرۆڤ تا هەینی داهاتوو. ✨\n"
                    f"📿 <b>زۆر سەڵاواتدان:</b> پێغەمبەری ئازیزمان (د.خ) دەفەرموێت سەڵاواتەکانی ئەمڕۆتانم پێ دەگات، بۆیە زۆر سەڵاواتم لەسەر لێبدەن. 🌸\n"
