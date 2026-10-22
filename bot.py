@@ -34,14 +34,37 @@ GROUP_ID = "@quran_bane"
 
 GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
 
+# لینک دیتابیس آمارگیر جدید (برای ثبت کلیک‌ها و بازدیدها در شیت Logs)
+LOG_URL = "https://script.google.com/macros/s/AKfycbwz9ya2jZnD6kaFtcy1hJuZE8Lyz9_fSTGlc7AvYCar868pE3M6UcUTaVVJRF_DR2SHSQ/exec"
+
 MINI_APP_URL = "https://asmanpass.github.io/baneh-quran-app/"
 
-# ⚠️ حتماً لینک جدید پوستر خود را در خط زیر جایگزین کنید:
+# ⚠️ لینک پوستر (دقیقا همان چیزی که خودتان گذاشتید)
 POSTER_URL = "https://asmanpass.github.io/pooster/"
 
 AZAN_URL = "https://asmanpass.github.io/azan"
 CHANNEL_URL = "https://t.me/quran_bane"
 ADMIN_URL = "https://t.me/sinazarefar"
+
+# ==========================================
+# سیستم ثبت آمار (بدون ایجاد تأخیر در ربات)
+# ==========================================
+def send_log_sync(data):
+    try:
+        requests.post(LOG_URL, json=data, timeout=5)
+    except:
+        pass
+
+async def log_action(user, action_name):
+    if not user: return
+    data = {
+        "userId": str(user.id),
+        "firstName": user.first_name or "بدون نام",
+        "username": user.username or "ندارد",
+        "action": action_name
+    }
+    loop = asyncio.get_running_loop()
+    loop.run_in_executor(None, send_log_sync, data)
 
 # ==========================================
 # توابع کمکی
@@ -101,6 +124,7 @@ def get_dynamic_location_message():
            f"<b>📖 تیلاوەتی: جوزئی {juz_word} ({to_persian_num(final_juz)})</b>\n\n"
            f"<b>⏰ کات: چوارشەممە، دوای نوێژی عیشا</b>")
     return msg
+
 def get_help_message():
     return ("<b>💡 ڕێنمایی بەکارهێنان:</b>\n\n"
             "<b>ئەم ڕۆباتە بۆ ئاگاداربوون لە بەرنامەی هەفتانەی خەتمی قوڕئانی پیرۆز لە شاری بانە دروست کراوە. "
@@ -235,6 +259,7 @@ async def send_morning_date_message(context: ContextTypes.DEFAULT_TYPE):
 # توابع اصلی ربات و دکمه‌ها
 # ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: ارسال /start")
     msg = "<b>✨ بەناوی خودا. بەخێربێن بۆ ڕۆباتی کۆڕی خەتمی قوڕئانی پیرۆز لە شاری بانە.</b>\n\nتکایە بۆ بینینی بەرنامەی هەفتانە، پۆستەری مەراسیم یان کاتی بانگ، کلیک لەسەر دوگمەکانی خوارەوە بکە:"
     keyboard = [
         [InlineKeyboardButton("✨ 📱 کردنەوەی بەرنامەی هەفتانە ✨", web_app=WebAppInfo(url=MINI_APP_URL))],
@@ -246,44 +271,57 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(msg, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def app_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دکمه برنامه هفتگی")
     keyboard = [[InlineKeyboardButton("📱 کردنەوەی بەرنامەی هەفتانە", web_app=WebAppInfo(url=MINI_APP_URL))]]
     await update.message.reply_text("<b>📱 بۆ کردنەوەی بەرنامەی هەفتانە (مینی‌ئەپ) کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def poster_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دکمه پوستر")
     keyboard = [[InlineKeyboardButton("🕌 پۆستەری مەراسیم", web_app=WebAppInfo(url=POSTER_URL))]]
     await update.message.reply_text("<b>🕌 بۆ بینینی پۆستەری مەراسیم کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def azan_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دکمه اوقات شرعی")
     keyboard = [[InlineKeyboardButton("🕰 کاتی بانگ بە ئاسۆی بانە", web_app=WebAppInfo(url=AZAN_URL))]]
     await update.message.reply_text("<b>🕰 بۆ بینینی کاتی بانگ بە ئاسۆی شاری بانە کلیک لە سەر دوگمەی خوارەوە بکە:</b>", parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def location_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دریافت آدرس مسجد")
     await update.message.reply_text(get_dynamic_location_message(), parse_mode="HTML")
 
 async def channel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دکمه کانال")
     await update.message.reply_text(f"<b>📢 لینکی کەناڵی فەرمی کۆڕی خەتمی قورئان:</b>\n\n<b>👉 {CHANNEL_URL}</b>", parse_mode="HTML")
 
 async def contact_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دکمه ارتباط با ما")
     await update.message.reply_text(f"<b>📞 بۆ پەیوەندی گرتن لەگەڵ بەڕێوەبەرانی کۆڕ، دەتوانن نامە بۆ ئەم ئایدییە بنێرن:</b>\n\n👤<b> {ADMIN_URL}</b>", parse_mode="HTML")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: دکمه راهنما")
     await update.message.reply_text(get_help_message(), parse_mode="HTML")
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    if query.data == "loc": await query.message.reply_text(get_dynamic_location_message(), parse_mode="HTML")
-    elif query.data == "hlp": await query.message.reply_text(get_help_message(), parse_mode="HTML")
+    if query.data == "loc":
+        await log_action(update.effective_user, "ربات: کلیک روی شیشه‌ای مسجد")
+        await query.message.reply_text(get_dynamic_location_message(), parse_mode="HTML")
+    elif query.data == "hlp":
+        await log_action(update.effective_user, "ربات: کلیک روی شیشه‌ای راهنما")
+        await query.message.reply_text(get_help_message(), parse_mode="HTML")
 
 # ==========================================
 # دستورات تست مخفی برای ادمین
 # ==========================================
 async def test_night_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: تست پیام نیمه‌شب")
     await update.message.reply_text("⏳ در حال اجرای تست پیام نیمه‌شب (ارسال به گروه)...")
     await send_midnight_prayer_times(context)
     await update.message.reply_text("✅ پیام نیمه‌شب با موفقیت به کانال/گروه ارسال شد.")
 
 async def test_morning_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await log_action(update.effective_user, "ربات: تست پیام صبحگاهی")
     await update.message.reply_text("⏳ در حال اجرای تست پیام صبحگاهی (ارسال به گروه)...")
     await send_morning_date_message(context)
     await update.message.reply_text("✅ پیام صبحگاهی با موفقیت به کانال/گروه ارسال شد.")
@@ -319,7 +357,7 @@ def main():
     app.job_queue.run_daily(send_midnight_prayer_times, time=datetime.time(hour=0, minute=1, tzinfo=tehran_tz))
     app.job_queue.run_daily(send_morning_date_message, time=datetime.time(hour=8, minute=0, tzinfo=tehran_tz))
 
-    print("ربات پایتون با تقویم تهران فعال شد...")
+    print("ربات پایتون با تقویم تهران و سیستم لاگ فعال شد...")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
