@@ -169,7 +169,7 @@ async def send_midnight_prayer_times(context: ContextTypes.DEFAULT_TYPE):
            f"☀️ <b>خۆرهەڵات:</b> {to_persian_num(today_times[1])} \u200F\n"
            f"🕌 <b>بانگی نیوەڕۆ:</b> {to_persian_num(today_times[2])} \u200F\n"
            f"📿 <b>بانگی عەسر:</b> {to_persian_num(today_times[3])} \u200F\n"
-           f"🌙 <b>بانگی ئێوارە:</b> {to_persian_num(today_times[4])} \u200F\n"
+           f"🌙 <b>بانگی شێوان:</b> {to_persian_num(today_times[4])} \u200F\n"
            f"✨ <b>بانگی عیشا:</b> {to_persian_num(today_times[5])} \u200F\n\n"
            f"📌 <b>کاناڵی قورئانی بانە:</b>\n @quran_bane\n"
            f"🤖 <b>ڕۆبۆتی زیرەکی کاناڵ:</b>\n @banehquranbot\n"
