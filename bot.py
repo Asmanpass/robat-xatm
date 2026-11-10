@@ -29,7 +29,8 @@ def keep_alive():
 # ==========================================
 # تنظیمات اصلی ربات
 # ==========================================
-TOKEN = "8929264370:AAGATTmUY8zewFLpvFutpgWUxDt4mHuBQsM" 
+TOKEN = os.environ.get("BOT_TOKEN")
+ 
 GROUP_ID = "@quran_bane" 
 
 GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyk4NBwuxnyZ5Ku1nQ7Qa3X6ty3pjZcIeUTwWFnr_pCXFBU6xXpNrMICHeBVC2wBWBk/exec"
