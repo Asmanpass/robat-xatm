@@ -355,7 +355,7 @@ def main():
     tehran_tz = pytz.timezone('Asia/Tehran')
     
     # تنظیم زمان‌بندی‌های اصلی
-    app.job_queue.run_daily(send_midnight_prayer_times, time=datetime.time(hour=0, minute=1, tzinfo=tehran_tz))
+    # app.job_queue.run_daily(send_midnight_prayer_times, time=datetime.time(hour=0, minute=1, tzinfo=tehran_tz))
     app.job_queue.run_daily(send_morning_date_message, time=datetime.time(hour=8, minute=0, tzinfo=tehran_tz))
 
     print("ربات پایتون با تقویم تهران و سیستم لاگ فعال شد...")
